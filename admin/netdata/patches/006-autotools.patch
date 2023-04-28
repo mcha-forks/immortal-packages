@@ -1,0 +1,43 @@
+From bec801ceb7715de6d3e7b551630161418510125e Mon Sep 17 00:00:00 2001
+From: "M. Raymond Vaughn" <m.raymond.vaughn@gmail.com>
+Date: Wed, 25 Jan 2023 22:34:22 -0500
+Subject: [PATCH] Build judyltablesgen for host when cross-compiling
+
+Fixes #14185
+---
+ Makefile.am  | 10 ++++++----
+ configure.ac |  2 ++
+ 2 files changed, 8 insertions(+), 4 deletions(-)
+
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -524,12 +524,14 @@ libnetdata/libjudy/src/JudyL/libjudy_a-j
+ noinst_PROGRAMS = judyltablesgen
+ 
+ judyltablesgen_SOURCES = libnetdata/libjudy/src/JudyL/JudyLTablesGen.c
+-judyltablesgen_CFLAGS = $(LIBJUDY_CFLAGS) -DJUDYL -I$(abs_top_srcdir)/libnetdata/libjudy/src -I$(abs_top_srcdir)/libnetdata/libjudy/src/JudyCommon -Wno-sign-compare -Wno-implicit-fallthrough
++judyltablesgen_CFLAGS = $(LIBJUDY_CFLAGS) $(BUILD_CFLAGS) -DJUDYL -I$(abs_top_srcdir)/libnetdata/libjudy/src -I$(abs_top_srcdir)/libnetdata/libjudy/src/JudyCommon -Wno-sign-compare -Wno-implicit-fallthrough -Wno-format -Wno-format-security
++judyltablesgen_LDFLAGS = $(BUILD_LDFLAGS)
+ 
+-$(builddir)/judyltablesgen$(EXEEXT) : CFLAGS += -Wno-format -Wno-format-security
++$(builddir)/judyltablesgen$(BUILD_EXEEXT) :
++	$(CC_FOR_BUILD) $(judyltablesgen_CFLAGS) $(judyltablesgen_LDFLAGS) $(judyltablesgen_SOURCES) -o judyltablesgen$(BUILD_EXEEXT)
+ 
+-JudyLTables.c: $(abs_top_srcdir)/libnetdata/libjudy/src/JudyL/JudyLTablesGen.c $(builddir)/judyltablesgen$(EXEEXT)
+-	$(builddir)/judyltablesgen$(EXEEXT)
++JudyLTables.c: $(abs_top_srcdir)/libnetdata/libjudy/src/JudyL/JudyLTablesGen.c $(builddir)/judyltablesgen$(BUILD_EXEEXT)
++	$(builddir)/judyltablesgen$(BUILD_EXEEXT)
+ 
+ libjudy_a-JudyLTables.$(OBJEXT) : CFLAGS += -I$(abs_top_srcdir)/libnetdata/libjudy/src/JudyL
+ 
+--- a/configure.ac
++++ b/configure.ac
+@@ -54,6 +54,8 @@ else
+   AC_CHECK_TOOL([AR], [ar])
+ fi
+ 
++AX_PROG_CC_FOR_BUILD
++
+ # -----------------------------------------------------------------------------
+ # configurable options
+ 
