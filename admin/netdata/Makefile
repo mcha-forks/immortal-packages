@@ -31,7 +31,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/netdata
   SECTION:=admin
   CATEGORY:=Administration
-  DEPENDS:=+zlib +libuuid +libuv +libmnl +libjson-c
+  DEPENDS:=+zlib +libuuid +libuv +libmnl +libjson-c +libopenssl
   TITLE:=Real-time performance monitoring tool
   URL:=https://www.netdata.cloud/
 endef
@@ -62,8 +62,7 @@ CONFIGURE_ARGS += \
 	--disable-plugin-xenstat \
 	--disable-backend-prometheus-remote-write \
 	--disable-unit-tests \
-	--disable-ml \
-	--disable-cloud
+	--disable-ml
 
 define Build/Configure
 	$(SED) 's/m4_esyscmd(\[git describe .*\])/$(PKG_VERSION)/' $(PKG_BUILD_DIR)/configure.ac
